@@ -34,6 +34,20 @@ class Settings(BaseSettings):
     storage_root: Path = Path("runtime/storage")
     storage_warning_gb: int = Field(default=900, ge=1)
 
+    session_cookie_name: str = "infrasentinel_session"
+    session_idle_minutes: int = Field(default=30, ge=5)
+    session_absolute_days: int = Field(default=7, ge=1)
+    session_touch_minutes: int = Field(default=5, ge=1)
+    allowed_origins: str = (
+        "http://127.0.0.1:8090,http://localhost:8090,http://127.0.0.1:5173,http://localhost:5173"
+    )
+
+    infrasentinel_bootstrap_admin_email: str | None = None
+    infrasentinel_bootstrap_admin_username: str | None = None
+    infrasentinel_bootstrap_admin_password: SecretStr | None = None
+    infrasentinel_bootstrap_admin_display_name: str = "InfraSentinel Admin"
+    infrasentinel_bootstrap_admin_locale: Literal["zh-CN", "en"] = "zh-CN"
+
     @model_validator(mode="after")
     def reject_unsafe_production_defaults(self) -> Settings:
         secret = self.infrasentinel_secret_key.get_secret_value()

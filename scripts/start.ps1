@@ -23,6 +23,14 @@ try {
     } | Select-Object -First 1
     if (-not $environmentPath) { throw "Conda environment 'infrasentinel' was not found." }
     $pythonPath = Join-Path $environmentPath "python.exe"
+    $npmPath = Join-Path $environmentPath "npm.cmd"
+    Push-Location (Join-Path $projectRoot "frontend")
+    try {
+        & $npmPath ci
+        & $npmPath run build
+    } finally {
+        Pop-Location
+    }
     & $pythonPath -m alembic upgrade head
 
     if (Test-Path -LiteralPath $pidPath) {

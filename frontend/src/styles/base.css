@@ -1,0 +1,21 @@
+:root { color-scheme: dark; font-family: "Segoe UI Variable", "Segoe UI", sans-serif; color: #e7f2f2; background: #081116; font-synthesis: none; --basalt: #081116; --steel: #17262d; --steel-2: #21353d; --mist: #e7f2f2; --muted: #91a6ab; --cyan: #4ed8d0; --amber: #e5a63c; --red: #ed6a5e; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--basalt); }
+button, input, select { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+a { color: var(--cyan); }
+h1, h2, strong { font-family: Bahnschrift, "Arial Narrow", sans-serif; letter-spacing: .02em; }
+.eyebrow { margin: 0 0 .8rem; color: var(--cyan); font: 600 .72rem/1.2 "Cascadia Mono", monospace; letter-spacing: .14em; }
+.brand-mark { display: inline-grid; place-items: center; width: 2.5rem; aspect-ratio: 1; border: 1px solid var(--cyan); color: var(--cyan); font: 700 .8rem "Cascadia Mono", monospace; clip-path: polygon(12% 0,100% 0,100% 88%,88% 100%,0 100%,0 12%); }
+.language-switch, .quiet-button { border: 1px solid #3a5058; color: var(--mist); background: transparent; padding: .55rem .75rem; cursor: pointer; }
+.language-switch:hover, .quiet-button:hover { border-color: var(--cyan); color: var(--cyan); }
+.primary-button, .primary-link { display: inline-flex; justify-content: center; border: 1px solid var(--cyan); background: var(--cyan); color: #061214; padding: .78rem 1rem; font-weight: 750; text-decoration: none; cursor: pointer; }
+.primary-button:disabled { opacity: .55; cursor: wait; }
+.form-error { border-left: 3px solid var(--red); background: #2b191a; color: #ffd5d0; padding: .8rem 1rem; }
+.center-message { min-height: 100vh; display: grid; place-items: center; color: var(--muted); }
+input { width: 100%; border: 1px solid #3a5058; border-radius: 0; background: #0c181d; color: var(--mist); padding: .72rem .8rem; }
+input:hover { border-color: #627981; }
+label { display: grid; gap: .45rem; color: #c8d6d8; font-size: .88rem; }
+label small { color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { button, a, input { transition: color .16s ease, border-color .16s ease, background .16s ease, transform .16s ease; } }

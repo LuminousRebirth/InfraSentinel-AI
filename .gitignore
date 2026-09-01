@@ -38,6 +38,7 @@ node_modules/
 frontend/dist/
 desktop/dist/
 desktop/release/
+*.tsbuildinfo
 
 # Local tools and IDEs
 .idea/
