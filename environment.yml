@@ -1,0 +1,25 @@
+name: infrasentinel
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.16
+  - pip=26.2.1
+  - ffmpeg
+  - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cu130
+      - torch==2.13.0+cu130
+      - torchvision==0.28.0+cu130
+      - fastapi==0.141.1
+      - uvicorn[standard]==0.52.1
+      - pydantic-settings==2.15.0
+      - sqlalchemy==2.0.52
+      - alembic==1.19.1
+      - psycopg[binary]==3.3.4
+      - redis==6.4.0
+      - cryptography==46.0.3
+      - httpx==0.28.1
+      - pytest==9.1.1
+      - ruff==0.13.2
+      - numpy==2.4.4
+      - opencv-python==4.13.0.92
+      - ultralytics==8.4.117

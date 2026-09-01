@@ -1,0 +1,16 @@
+# 管道缺陷识别训练配置
+# 数据来源: CCTV/QV 检测车
+task: pipeline
+
+model: yolo26n.pt
+data: E:/python_code/datasets/pipeline/archive/merged_subset/data.yaml
+output: models/pipeline_subset
+
+epochs: 100
+imgsz: 640
+batch: 8
+device: 0
+workers: 4
+patience: 30
+lr0: 0.01
+optimizer: auto

@@ -1,0 +1,10 @@
+# 设备外观异常检测训练配置（Anomalib PatchCore 无监督）
+# 数据来源: 泵房设备照片、无人机图像
+task: equipment
+
+categories: [bottle, cable]
+backbone: wide_resnet50_2
+data_dir: datasets/mvtec_anomaly_detection
+output: models/equipment
+device: 0
+num_workers: 2

@@ -1,0 +1,15 @@
+# 巡检质检配置（照片质量规则 + 设备分类训练）
+# 数据来源: 巡检照片
+task: inspection
+
+# 照片质量规则阈值
+blur_threshold: 50.0      # 拉普拉斯方差低于此值判定模糊
+brightness_min: 60.0      # 亮度低于此值判定欠曝
+brightness_max: 200.0     # 亮度高于此值判定过曝
+
+# 设备分类模型训练（需自建设备照片数据集）
+cls_model: yolo26n-cls.pt
+cls_data: datasets/equipment_cls
+cls_epochs: 50
+cls_imgsz: 224
+cls_output: models/inspection/cls

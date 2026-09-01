@@ -1,0 +1,17 @@
+# 安全行为识别（PPE 佩戴检测）训练配置
+# 数据来源: 厂区固定摄像头
+task: safety
+
+model: yolo26n.pt
+# data: E:/python_code/datasets/ppe/merged_dataset/data.yaml
+data: E:/python_code/datasets/ppe/merged_dataset/data.yaml
+output: models/safety_subset
+
+epochs: 100
+imgsz: 640
+batch: 16
+device: 0
+workers: 4
+patience: 30
+lr0: 0.01
+optimizer: auto

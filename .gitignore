@@ -1,0 +1,48 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Python and test artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+.venv/
+venv/
+
+# User assets and generated outputs
+datasets/
+models/
+runs/
+runtime/
+infer_test/
+*.pt
+*.onnx
+*.engine
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Dependency data volumes
+volumes/
+
+# Frontend / desktop artifacts
+node_modules/
+frontend/dist/
+desktop/dist/
+desktop/release/
+
+# Local tools and IDEs
+.idea/
+.vscode/
+.workbuddy/
+*.log
+*.pid
+condaenv.*.requirements.txt
