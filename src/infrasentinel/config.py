@@ -48,6 +48,19 @@ class Settings(BaseSettings):
     infrasentinel_bootstrap_admin_display_name: str = "InfraSentinel Admin"
     infrasentinel_bootstrap_admin_locale: Literal["zh-CN", "en"] = "zh-CN"
 
+    infrasentinel_pipeline_pt: Path | None = None
+    infrasentinel_pipeline_engine: Path | None = None
+    infrasentinel_ppe_pt: Path | None = None
+    infrasentinel_ppe_engine: Path | None = None
+    infrasentinel_vision_device: str = "auto"
+    infrasentinel_vision_workers: int = Field(default=2, ge=1, le=8)
+    infrasentinel_obs_camera_index: int = Field(default=0, ge=0, le=32)
+    infrasentinel_task_lease_seconds: int = Field(default=120, ge=30, le=3600)
+    infrasentinel_image_max_mb: int = Field(default=50, ge=1, le=50)
+    infrasentinel_video_max_gb: int = Field(default=5, ge=1, le=5)
+    infrasentinel_video_max_seconds: int = Field(default=7200, ge=1, le=7200)
+    infrasentinel_storage_critical_gb: int = Field(default=2, ge=1)
+
     @model_validator(mode="after")
     def reject_unsafe_production_defaults(self) -> Settings:
         secret = self.infrasentinel_secret_key.get_secret_value()

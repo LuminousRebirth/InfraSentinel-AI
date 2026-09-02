@@ -10,8 +10,8 @@
 - 旧 Demo（只读迁移来源）：`E:\python_code\yolo`
 - 目标：基于现有 YOLO26 Demo 构建 Windows 本地部署的企业级管道缺陷与安全帽智能检测分析预警系统。
 - 详细需求：[PROJECT_REQUIREMENTS.md](PROJECT_REQUIREMENTS.md)
-- 当前阶段：v1.1 `identity-access` 已完成实现、验收、用户审查与 GitHub 归档。
-- 当前版本：v1.1（提交 `4509f8b`，标签 `v1.1` 已推送）。
+- 当前阶段：v1.2 `vision-detection` 已于 2026-09-02 通过用户审阅，后续开发继续留在独立分支。
+- 当前版本：v1.2 位于 `codex/v1.2-vision-detection`；按用户要求，后续提交仅推送此开发分支，整个系统完成前不合并 `main`、不推送新标签。v1.1 为提交 `4509f8b`、标签 `v1.1`。
 
 ## 2. 已确认决策
 
@@ -37,7 +37,7 @@
 |---|---|---|---|
 | v1.0 | 工程基线、Conda、Docker、数据服务、安全配置 | 完成 | 提交 `b77d245`；标签 `v1.0` 已推送；23 tests passed；健康检查 overall ready、存储容量 warning。 |
 | v1.1 | 认证、审批、权限、国际化、审计基础 | 完成，用户审查通过 | 38 个 Python 测试、7 个前端测试通过；界面、深链接、API 文档和全部依赖实时健康。 |
-| v1.2 | YOLO26 图片/视频/OBS 检测与记录 | 未开始 | 复用现有 `src/vision_inspection` 推理能力。 |
+| v1.2 | YOLO26 图片/视频/OBS 检测与记录 | 完成，用户审阅通过 | 53 个 Python 测试、9 个前端测试及实机图片/视频检测通过；真实 OBS 摄像头未启用。 |
 | v1.3 | LLM、多点分析、规则与预警闭环 | 未开始 | 依赖 v1.1、v1.2。 |
 | v1.4 | 数据集、标注、训练、评估、模型治理 | 未开始 | 依赖 v1.0、v1.2。 |
 | v1.5 | 工作台、报告、点位、健康、成本与设置 | 未开始 | 依赖 v1.3、v1.4。 |
@@ -45,8 +45,8 @@
 
 ## 4. 下一次工作应执行
 
-1. 为 v1.2 `vision-detection` 编写规格并提交用户审阅；未经批准不得实现。
-2. 继续保持 v1.1 服务运行，必要时使用 `scripts/stop.ps1` 停止并保留数据。
+1. 后续模块继续在 `codex/v1.2-vision-detection` 开发并只推送该分支；整个系统完成后再由用户决定何时合并 `main` 和建立标签。
+2. 启动 OBS Virtual Camera 后补做真实单路一小时验收；仿真 OBS 流程已通过。
 3. 继续保护 `E:\python_code\yolo\datasets`、权重和训练产物；不得复制或提交到新仓库。
 
 ## 5. 当前风险与未决项
@@ -98,9 +98,26 @@
 - 下一步：提交、打 `v1.1` 标签并推送，再进入 v1.2 规格阶段。
 - GitHub：提交 `4509f8b`，标签 `v1.1`，均已推送。
 
+### 2026-09-01 — v1.2 vision-detection specification
+- 状态：规格已于 2026-09-02 获用户批准，并授权不中断实施至最终审阅。
+- 范围：YOLO26 图片、视频、单路 OBS 检测；PostgreSQL 持久任务队列；双 Windows worker；原始/标注媒体和检测记录；项目与所有者权限；中英文 Web 流程。
+- 默认：旧 Demo 的 `.pt`/ONNX/TensorRT 仅作为环境配置指向的只读验收资产，不复制、不下载、不提交；TensorRT 优先、`.pt` 回退；项目暂作点位边界；事件合并、规则、LLM、预警、报告、删除、模型生命周期和 Electron 后移至既定里程碑。
+- 技术约束：只新增 `python-multipart`；不引入 Celery/RQ/通用工作流框架，使用 PostgreSQL 原子认领与租约恢复，Redis 仅保存短期 OBS 预览。
+- 下一步：按已生成的 v1.2 实施计划和 15 项任务连续构建，完成后交用户最终审阅。
+
 ### 2026-09-01 — v1.1 password policy override
 - 状态：按用户明确要求完成。
 - 变更：密码长度由 12–128 调整为 6–128；将已注册的 `admin` 账号提升为启用管理员并重置指定初始密码；停用替代账号 `system-admin` 并撤销其会话。
 - 验证：Python `38 passed`，前端 `7 passed`，Ruff/ESLint/TypeScript/Vite 全部通过；真实登录、管理员角色、退出和 readiness 验证成功。
 - 风险或偏差：用户指定的六位初始密码强度较低，但仍仅以 Argon2 哈希保存；建议在密码修改界面完成后更换。
 - GitHub：包含在提交 `4509f8b` 与标签 `v1.1` 中，均已推送。
+
+### 2026-09-02 — v1.2 vision-detection implementation
+- 状态：实现、审查与除真实 OBS 一小时运行外的验收已完成，并于 2026-09-02 通过用户审阅。
+- 变更：新增视觉模型部署登记与可逆迁移；图片批量和视频流式上传、解码验证、容量/频率限制与安全存储；PostgreSQL 持久队列、租约恢复、取消/重试和两个 Windows worker；图片/视频/OBS 推理、H.264 标注视频、关键帧、观测与性能指标；项目/所有者权限和审计；中英文智能检测、历史、详情与可重连 OBS 预览界面。
+- 模型：外部管道 `.pt` 版本 `40bc77143faf`、PPE `.pt` 版本 `ac797446c4e5` 已幂等登记，文件保持只读且未复制进仓库；TensorRT 配置存在但当前实机验收自动回退到 PyTorch，任务结果记录实际 backend。
+- 验证：Python `53 passed`（保留一条已知 Starlette TestClient 弃用警告）；Ruff、`pip check` 通过；前端 `9 passed`，ESLint、TypeScript/Vite 构建通过；PowerShell 5.1 解析、Compose 配置、Alembic `upgrade → downgrade → upgrade`、模型重复同步通过；CUDA 可用（RTX 4060 Laptop GPU）；真实管道图片得到 1 个 `SG`，真实 PPE 短视频 10/10 帧、71 个 helmet、H.264 输出成功；最终在线任务 `1c4d61c3-2700-4e31-ad56-71dcf7d2fe50` 由双 worker 完成，进度 100%、PT 后端、1 个检测、2 个媒体、1 条观测；readiness 为 ready、2/2 worker、2/2 模型和五个 healthy 容器；360px 页面无横向溢出。
+- 审查：修复上传事务失败的孤儿文件、列表 N+1、耗尽重试任务卡死、模型加载异常逃出 worker、视频转码临时文件、PID 复用误停、健康检查只数 PID 文件、OBS 资源清理/分辨率/重连、前端异步错误和 Blob URL 泄漏；普通用户横向越权被 API 和媒体测试拒绝，管理员访问通过。无未解决的关键/必改审查项。
+- 风险或偏差：OBS Virtual Camera 在索引 0 未开启，仿真捕获/Redis/取消/设备失败已通过但真实一小时验收待补；视频元数据使用 OpenCV 而非独立 FFprobe；模型同步不单独跑 TensorRT smoke，而由 worker 加载时验证并回退；详情暂取前 200 条观测且未提供游标分页；GPU 利用率/显存字段预留但未采样。E 盘约 11.9 GB 可用，仍处于容量告警。
+- 运维：`scripts/start.ps1` 自动迁移、同步模型、构建前端并启动 API + 2 worker；`scripts/health.ps1` 检查依赖；`scripts/stop.ps1` 仅停止校验过命令行的项目进程并保留 Docker 卷和媒体。Docker Desktop 4.50 再次生成不可访问的 AI/secrets socket 时，已备份设置到 `settings-store.pre-recovery-20260902-145004.json`，并将故障目录移动为 `run-stale-20260902-145004`、`docker-secrets-engine-stale-20260902-145334`、`run-stale-20260902-145649`；均可恢复，未删除容器、镜像或卷。
+- 下一步：在 `codex/v1.2-vision-detection` 提交并推送，保留独立回退点；后续模块继续只推送此分支，整个系统完成前不合并主分支、不推送新标签。

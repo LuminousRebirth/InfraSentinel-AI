@@ -3,7 +3,7 @@
 body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--basalt); }
 button, input, select { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
-button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 a { color: var(--cyan); }
 h1, h2, strong { font-family: Bahnschrift, "Arial Narrow", sans-serif; letter-spacing: .02em; }
 .eyebrow { margin: 0 0 .8rem; color: var(--cyan); font: 600 .72rem/1.2 "Cascadia Mono", monospace; letter-spacing: .14em; }

@@ -23,3 +23,13 @@ def test_redis_rate_limit_and_outage_fail_closed() -> None:
         enforce_rate_limit(redis_url, key, limit=2, window_seconds=60)
     with pytest.raises(InfraError, match="auth.rate_limit_unavailable"):
         enforce_rate_limit("redis://127.0.0.1:1/0", key, limit=2, window_seconds=60)
+
+    detection_key = f"infrasentinel:test:{uuid.uuid4().hex}"
+    with pytest.raises(InfraError, match="detection.rate_limited"):
+        enforce_rate_limit(
+            redis_url,
+            detection_key,
+            limit=0,
+            window_seconds=60,
+            error_prefix="detection",
+        )

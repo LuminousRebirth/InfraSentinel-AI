@@ -8,11 +8,12 @@ from .database import SessionLocal, get_engine
 from .errors import InfraError
 from .health import readiness
 from .services import bootstrap_admin
+from .vision_models import sync_vision_models
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(prog="infrasentinel")
-    parser.add_argument("command", choices=["health", "init-admin"])
+    parser.add_argument("command", choices=["health", "init-admin", "sync-vision-models"])
     args = parser.parse_args()
 
     if args.command == "health":
@@ -40,6 +41,21 @@ def main() -> int:
             parser.error(exc.code)
         state = "created" if created else "already exists"
         print(f"Administrator {user.email} {state}.")
+        return 0
+    if args.command == "sync-vision-models":
+        with SessionLocal(bind=get_engine()) as db:
+            models = sync_vision_models(db, get_settings())
+        summary = [
+            {
+                "code": model.code,
+                "scene": model.scene,
+                "availability": model.availability,
+                "version": model.version_label,
+                "engine_configured": bool(model.engine_path),
+            }
+            for model in models
+        ]
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
         return 0
     return 2
 

@@ -5,6 +5,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 
 from .api import router as health_router
 from .config import get_settings
+from .detection_api import router as detection_router
 from .errors import install_error_handlers
 from .identity_api import router as identity_router
 
@@ -21,6 +22,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router, prefix=settings.api_prefix)
     app.include_router(identity_router, prefix=settings.api_prefix)
+    app.include_router(detection_router, prefix=settings.api_prefix)
 
     frontend_dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 

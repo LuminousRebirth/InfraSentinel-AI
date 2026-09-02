@@ -5,11 +5,15 @@ import { useI18n } from "./i18n";
 import { AdminAuditPage } from "./pages/AdminAuditPage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { AppHomePage } from "./pages/AppHomePage";
+import { DetectionDetailPage } from "./pages/DetectionDetailPage";
+import { DetectionHistoryPage } from "./pages/DetectionHistoryPage";
+import { DetectionPage } from "./pages/DetectionPage";
 import { LoginPage } from "./pages/LoginPage";
 import { PendingPage } from "./pages/PendingPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import "./styles/app.css";
 import "./styles/auth.css";
+import "./styles/detection.css";
 
 function LanguageSwitch() {
   const { locale, setLocale, t } = useI18n();
@@ -47,6 +51,8 @@ function AppShell() {
         </NavLink>
         <nav aria-label="Primary">
           <NavLink to="/app">{t("home")}</NavLink>
+          <NavLink to="/detections">{t("detection")}</NavLink>
+          <NavLink to="/detections/history">{t("history")}</NavLink>
           {user?.role === "admin" && <NavLink to="/admin/users">{t("users")}</NavLink>}
           {user?.role === "admin" && <NavLink to="/admin/audit">{t("audit")}</NavLink>}
         </nav>
@@ -78,6 +84,9 @@ export function App() {
       <Route element={<RequireEnabled />}>
         <Route element={<AppShell />}>
           <Route path="/app" element={<AppHomePage />} />
+          <Route path="/detections" element={<DetectionPage />} />
+          <Route path="/detections/history" element={<DetectionHistoryPage />} />
+          <Route path="/detections/:id" element={<DetectionDetailPage />} />
           <Route element={<RequireEnabled admin />}>
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/admin/audit" element={<AdminAuditPage />} />

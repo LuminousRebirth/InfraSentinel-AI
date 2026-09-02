@@ -70,15 +70,22 @@ def rate_limit_key(prefix: str, source_ip: str, identifier: str = "") -> str:
     return f"infrasentinel:rate:{prefix}:{subject}"
 
 
-def enforce_rate_limit(redis_url: str, key: str, *, limit: int, window_seconds: int) -> None:
+def enforce_rate_limit(
+    redis_url: str,
+    key: str,
+    *,
+    limit: int,
+    window_seconds: int,
+    error_prefix: str = "auth",
+) -> None:
     client = Redis.from_url(redis_url, decode_responses=True, socket_timeout=2)
     try:
         count = int(client.eval(RATE_LIMIT_SCRIPT, 1, key, window_seconds))
         if count > limit:
-            raise InfraError(429, "auth.rate_limited")
+            raise InfraError(429, f"{error_prefix}.rate_limited")
     except InfraError:
         raise
     except RedisError as exc:
-        raise InfraError(503, "auth.rate_limit_unavailable") from exc
+        raise InfraError(503, f"{error_prefix}.rate_limit_unavailable") from exc
     finally:
         client.close()

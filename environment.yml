@@ -26,3 +26,4 @@ dependencies:
       - numpy==2.4.4
       - opencv-python==4.13.0.92
       - ultralytics==8.4.117
+      - python-multipart==0.0.20

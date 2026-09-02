@@ -42,3 +42,16 @@ def test_production_rejects_default_database_password() -> None:
             ),
             redis_url="redis://:strong-password@redis:6379/0",
         )
+
+
+def test_vision_settings_are_bounded() -> None:
+    settings = Settings(_env_file=None)
+    assert settings.infrasentinel_vision_workers == 2
+    assert settings.infrasentinel_image_max_mb == 50
+    assert settings.infrasentinel_video_max_gb == 5
+    assert settings.infrasentinel_video_max_seconds == 7200
+
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None, infrasentinel_image_max_mb=51)
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None, infrasentinel_task_lease_seconds=5)

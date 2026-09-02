@@ -1,126 +1,110 @@
-# v1.1 Implementation Plan: identity-access
+# v1.2 Implementation Plan: vision-detection
 
-## Scope and gate
+## Scope and authorization
 
-This plan implements the user-approved `SPEC-identity-access.md`. It does not add OAuth/SSO/MFA, password recovery, custom roles, a generic policy engine, or business modules scheduled after v1.1. Implementation starts only after the human approves this plan and `tasks/todo.md`.
+This plan implements the user-approved `SPEC-vision-detection.md`. On 2026-09-02 the user explicitly authorized uninterrupted implementation through final review, so the plan and task phases do not pause for separate approval. LLM, rule grading, alerts, event merging, reports, deletion, model training/lifecycle, and Electron remain out of scope.
 
 ## Dependency graph
 
 ```text
-approved spec
-  └─ dependency/toolchain pins
-      ├─ PostgreSQL identity schema + migration
-      │   ├─ password/session primitives
-      │   ├─ error/i18n/request-id foundation
-      │   └─ append-only audit writer
-      │       └─ registration + bootstrap services
-      │           └─ session/authentication API
-      │               └─ admin lifecycle + project-access API
-      │                   └─ rate-limit/CSRF hardening
-      └─ frontend compiler/test scaffold
-          └─ typed API + locale + route guards
-              ├─ login/register/pending pages
-              └─ app/users/audit pages
-                  └─ production static serving
-
-backend + frontend complete
-  └─ migration cycle + full regression + live/manual acceptance
-      └─ review, documentation, v1.1 commit/tag/push
+approved specification
+  └─ configuration + model deployment registry + migration
+      ├─ shared inference runtime and annotation
+      └─ durable job/media/observation services
+          ├─ streamed image/video upload API
+          ├─ PostgreSQL worker claim/lease/retry lifecycle
+          │   ├─ image execution
+          │   ├─ video execution
+          │   └─ single OBS execution + Redis preview
+          └─ authorized list/detail/media/OBS API
+              └─ bilingual create/history/detail/live Web UI
+                  └─ full regression + hardware/browser acceptance + review
 ```
 
 ## Build sequence
 
-### Slice 1 — Reproducible dependencies and persistence
+### Slice 1 — Persistence and configured model assets
 
-1. Pin `pwdlib[argon2]` and the approved Node/frontend packages in Conda/npm manifests.
-2. Create the minimal frontend compiler, lint, test, and Vite proxy configuration without application features.
-3. Add SQLAlchemy models and one Alembic migration for users, sessions, projects, memberships, audit events, constraints, indexes, and the audit immutability trigger.
-4. Prove migration upgrade/downgrade/upgrade against the real PostgreSQL container before building services on it.
+1. Pin only `python-multipart` and add bounded vision settings.
+2. Add v1.2 enums/tables and one reversible Alembic migration.
+3. Add an idempotent CLI that registers the two configured legacy model deployments by path and checksum without copying bytes.
 
-Checkpoint: environment resolution succeeds, frontend empty build succeeds, and the v1.1 schema round-trips cleanly.
+Checkpoint: schema round-trip passes and both local scenes can be represented as available/unavailable without preventing startup.
 
-### Slice 2 — Security primitives and shared contracts
+### Slice 2 — Shared runtime, storage, and lifecycle
 
-1. Implement Argon2 password hash/verify/update, dummy verification, opaque token generation/digest, expiry, and secure cookie settings.
-2. Implement stable bilingual error resources, locale resolution, validation-error conversion, and `X-Request-ID` middleware.
-3. Implement a single audit insertion/redaction path; application code receives no update/delete API.
-4. Unit-test these primitives without Docker wherever possible.
+1. Preserve the public `vision_inspection.infer` contract while exposing reusable typed detections and deterministic annotation.
+2. Implement server-generated storage keys, chunked hashing, decoder validation, atomic finalization, and media metadata.
+3. Implement legal job transitions, project/owner authorization, atomic PostgreSQL claim, heartbeat lease, cancellation, retry, and audit writes.
 
-Checkpoint: focused unit tests prove passwords/tokens are never echoed, error keys have zh-CN/en parity, and audit state is redacted.
+Checkpoint: pure tests prove transition, storage, authorization, fallback, and legacy compatibility behavior without GPU or real weights.
 
-### Slice 3 — Account lifecycle, sessions, and authorization API
+### Slice 3 — Image and video vertical flows
 
-1. Add schemas and transactional services for normalized registration and idempotent administrator bootstrap.
-2. Add current-user, administrator, and project-access dependencies.
-3. Add registration/login/logout/me/profile/password routes with database-backed session revocation.
-4. Add administrator user-status, minimal project, membership, and audit-query routes.
-5. Add Redis fixed-window limits and same-origin checks to unsafe cookie-authenticated operations.
-6. Keep routes thin: validation and HTTP translation in routes, lifecycle rules and audit writes in transactional service functions.
+1. Add streamed image batch/video upload and durable job creation.
+2. Execute image inference and persist annotated images/observations/metrics.
+3. Execute sampled video inference, write browser-playable annotated video/keyframes, report progress, and cooperate with cancellation.
+4. Expose authorized list/detail/media/cancel/retry routes.
 
-Checkpoint: PostgreSQL/Redis integration tests cover pending → enabled → disabled, last-admin protection, project isolation, rate limits, CSRF rejection, and secret-free audit records.
+Checkpoint: synthetic adapters and media prove complete, failed, cancelled, recovered, and retried flows; Web requests never execute inference.
 
-### Slice 4 — Operable bilingual Web UI
+### Slice 4 — Single OBS flow
 
-1. Build a typed native-fetch boundary, locale resources, session context, and anonymous/pending/user/admin route guards.
-2. Build accessible login, registration, and pending-approval pages.
-3. Build the authenticated shell, authorized-project summary, user approval/status table, project assignment controls, and audit table.
-4. Use the required industrial-dark visual system with native controls, strong focus states, semantic status labels, and 360px/1280px layouts.
-5. Keep `/docs`; serve `frontend/dist` from FastAPI so the production UI and cookie API are same-origin.
+1. Enforce one queued/running OBS job transactionally.
+2. Add camera capture, dynamic parameters, bounded durable observations/keyframes, Redis latest-frame TTL, and clean stop/device-loss behavior.
+3. Add authorized live status/preview delivery with explicit stale/reconnect state.
 
-Checkpoint: Vitest/component tests pass, TypeScript strict build passes, and manual browser checks cover keyboard navigation, both locales, narrow layout, and role-specific routes.
+Checkpoint: fake camera tests cover concurrency, dynamic updates, disconnect, cancellation, and preview expiry; real OBS acceptance follows when the local device is available.
 
-### Slice 5 — Integrated acceptance and milestone
+### Slice 5 — Bilingual Web experience
 
-1. Run full Python tests, Ruff, npm tests/lint/build, `pip check`, Compose validation, PowerShell parsing, and Alembic cycle.
-2. Restart the live stack and run the approved bootstrap/register/approve/assign/login/disable/audit acceptance path.
-3. Review security, authorization boundaries, dependencies, secret/large-file exclusions, and accessibility.
-4. Update `README.md`, `AGENT.md`, spec deviations, and task evidence.
-5. After user review and explicit GitHub approval, commit, tag `v1.1`, and push.
+1. Add typed API contracts and detection navigation.
+2. Build image/video/OBS create controls and upload/queue feedback.
+3. Build history/detail media, object, timeline, progress, cancellation, and retry views.
+4. Extend the industrial dark system for 360px/1280px, keyboard, focus, and non-color status cues.
 
-Checkpoint: every success criterion in `SPEC-identity-access.md` is checked with recorded evidence and no unresolved required/critical review finding.
+Checkpoint: focused component tests, locale parity, lint, and production build pass.
 
-## Transaction and authorization design
+### Slice 6 — Integrated acceptance and final review
 
-- Each lifecycle mutation and its audit event commit in one PostgreSQL transaction.
-- Routes never accept role/status/owner decisions from the client beyond the exact administrator action schema.
-- Session cookies contain only the raw opaque token; PostgreSQL stores only its SHA-256 digest.
-- Account disable/reject, password change, and role change revoke sessions within the same transaction.
-- Administrator global project access is implemented once in a shared dependency; normal-user access requires membership, and later modules add ownership checks.
-- Failed login audit and Redis counters must not reveal whether an identifier exists.
+1. Run full Python/frontend tests, Ruff, build, migration cycle, dependency/config/PowerShell checks, and secret/large-file scan.
+2. Restart the live system, register real model assets, run image/video detections, verify two workers, and exercise one OBS session when a camera is available.
+3. Perform multi-axis correctness/security/performance/maintainability/accessibility review and fix all required findings.
+4. Update README, specification checkboxes, task evidence, and `AGENT.md`; leave the milestone uncommitted/unpushed for the user's final review.
 
-## Parallel opportunities
+## Key decisions
 
-- After API schemas and error codes are frozen, locale resources and frontend page layout can be developed independently from remaining backend endpoint internals.
-- Pure password/session/error tests can run without Docker while migration and integration checks use PostgreSQL/Redis.
-- Visual QA and backend security review can run independently after the integrated build exists.
-
-No parallel work may create duplicate API contracts, domain enums, error-code sets, or locale sources.
+- PostgreSQL is the queue and source of truth; Redis is only short-lived OBS transport.
+- Two independent Windows worker processes avoid CUDA fork inheritance and satisfy the approved two-job ceiling.
+- One concrete adapter, worker, and storage layout are used; no generic broker/provider/repository abstractions.
+- Model binaries remain read-only external assets selected by environment variables.
+- Every API access applies both project access and ownership, with administrator global visibility.
+- Outputs publish only after atomic filesystem finalization and a successful database transaction.
 
 ## Risks and mitigations
 
-- **Authentication regression:** write focused security tests before routes; use generic credential errors and dummy Argon2 verification.
-- **Cookie auth on approved LAN HTTP:** keep `Secure=false` only in development; production validation requires `Secure=true`; enforce SameSite and same-origin checks in both modes.
-- **Last-admin lockout:** reject any transition that would leave zero enabled administrators; cover concurrent transitions with a database transaction and test.
-- **Audit tampering or leakage:** central redaction plus PostgreSQL update/delete rejection; test with representative secret keys and raw tokens.
-- **Schema rollback:** keep all v1.1 objects in one reversible migration and prove upgrade/downgrade/upgrade before API work proceeds.
-- **Redis outage:** fail registration/login with localized 503 instead of silently disabling rate limits; keep already-authenticated reads independent of Redis.
-- **Frontend dependency churn:** pin direct and transitive versions in `package-lock.json`; add no UI/state/form/i18n framework without a demonstrated need.
-- **Static-app routing conflict:** reserve `/api` and `/docs` before SPA fallback; test root, deep links, OpenAPI, and health routes.
-- **Disk capacity:** v1.1 stores little media, but the existing 12.04 GB warning remains visible and blocks no identity work.
+- **Low E-drive capacity:** reject unsafe uploads at a critical free-space floor; use tiny generated acceptance media; preserve the existing warning.
+- **GPU/TensorRT mismatch:** smoke-test availability and expose `.pt` fallback; never fail application startup because a model is absent.
+- **Worker crash or duplicate output:** claim with row locks, heartbeat leases, attempt-scoped temporary files, and conditional final transition.
+- **Large/untrusted media:** chunked byte limits, decoder/FFprobe validation, UUID storage keys, bounded subprocess arguments, and authorized media ids.
+- **OBS unavailable in automation:** cover the complete flow with a fake capture adapter and record real-device acceptance separately without weakening required code.
+- **Long video result volume:** store only detected observations and sampled metrics; paginate observation API.
+- **Scope creep:** retain raw observations for v1.3 but do not implement event grouping, risk, LLM, or alert concepts now.
 
 ## Verification matrix
 
-| Checkpoint | Automated evidence | Manual evidence |
+| Area | Automated evidence | Live/manual evidence |
 |---|---|---|
-| Toolchain | Conda update, npm clean install, empty frontend build | Node/Python versions recorded |
-| Persistence | Alembic upgrade/downgrade/upgrade, schema integration tests | Tables/indexes/trigger inspected |
-| Security primitives | Pytest password/token/error/audit suites | No secret appears in logs/responses |
-| Identity API | API and PostgreSQL/Redis integration tests | Register → approve → login → disable |
-| Authorization | Role/project matrix tests | User sees one assigned project; admin sees all |
-| Frontend | Vitest, ESLint, TypeScript/Vite build | zh-CN/en, keyboard, 360px/1280px |
-| Deployment | Compose config, PowerShell parse, live readiness | `/` UI, `/docs`, API and restart behavior |
-| Release | Git diff/secret/large-file checks | User review before `v1.1` push |
+| Schema/models | metadata tests; Alembic up/down/up | tables/indexes inspected |
+| Model registry/runtime | checksum/fallback/CLI tests | real pipeline and PPE assets synchronized |
+| Storage/uploads | size/decoder/path/hash tests | invalid and valid generated media uploads |
+| Queue/workers | claim/lease/cancel/retry tests | two worker processes and restart recovery |
+| Image/video | synthetic inference integration | real YOLO image and short video outputs |
+| OBS | fake capture/Redis/reconnect tests | one OBS virtual camera when available |
+| Authorization | owner/project/admin matrix | two-account media isolation |
+| Frontend | Vitest, locale parity, ESLint, build | zh-CN/en, keyboard, 360px/1280px |
+| Release | full regression, diff/secret/large-file checks | user final review before Git/tag/push |
 
 ## Completion rule
 
-The module is not complete because pages render or endpoints return 200. It is complete only when the full lifecycle, authorization matrix, audit immutability/redaction, bilingual UI, production build, live restart, and documented verification all pass together.
+v1.2 reaches final review only when the durable lifecycle, authorization, media safety, image/video/OBS paths, bilingual UI, regression suite, live stack, and review findings are documented together. Hardware unavailable at runtime is recorded honestly and may not be replaced by a false success claim.

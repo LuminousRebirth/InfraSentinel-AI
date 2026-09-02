@@ -10,7 +10,9 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
+from time import perf_counter
 
 import cv2
 
@@ -53,25 +55,131 @@ def _find_best(task: str) -> Path:
     return candidates[-1]
 
 
-def _load_backend(scene: str, weights: Path | None, backend: str = "auto") -> tuple:
+def _load_backend(
+    scene: str,
+    weights: Path | None,
+    backend: str = "auto",
+    engine: Path | None = None,
+) -> tuple:
     """加载推理后端，返回 (model, kind)。
 
     backend="auto"：TensorRT 引擎存在则用 TRT，否则回退 PT。
     """
     cfg = SCENES[scene]
+    engine_path = engine or cfg["engine"]
     if backend == "auto":
-        backend = "trt" if cfg["engine"].exists() else "pt"
+        backend = "trt" if engine_path.exists() else "pt"
     if backend == "trt":
         from .trt_engine import TrtEngine
 
-        if not cfg["engine"].exists():
+        if not engine_path.exists():
             raise FileNotFoundError(
-                f"TensorRT 引擎不存在: {cfg['engine']}（先运行 scripts/build_engine.py）"
+                f"TensorRT 引擎不存在: {engine_path}（先运行 scripts/build_engine.py）"
             )
-        return TrtEngine(cfg["engine"], cfg["names"], cfg["imgsz"]), "trt"
+        return TrtEngine(engine_path, cfg["names"], cfg["imgsz"]), "trt"
     from ultralytics import YOLO
 
     return YOLO(str(weights or _find_best(scene))), "pt"
+
+
+@dataclass(frozen=True)
+class RuntimePrediction:
+    scene: str
+    detections: list[dict]
+    annotated_image: object
+    inference_ms: float
+    backend: str
+
+
+def annotate_detections(image, detections: list[dict]):
+    annotated = image.copy()
+    height, width = annotated.shape[:2]
+    for detection in detections:
+        x1, y1, x2, y2 = detection["box"]
+        left = max(0, min(width - 1, round(x1)))
+        top = max(0, min(height - 1, round(y1)))
+        right = max(left, min(width - 1, round(x2)))
+        bottom = max(top, min(height - 1, round(y2)))
+        label = f"{detection['cls']} {float(detection['conf']):.2f}"
+        cv2.rectangle(annotated, (left, top), (right, bottom), (0, 220, 255), 2)
+        cv2.putText(
+            annotated,
+            label,
+            (left, max(18, top - 6)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (0, 220, 255),
+            1,
+            cv2.LINE_AA,
+        )
+    return annotated
+
+
+class SceneRuntime:
+    """Reusable worker-owned model runtime; never instantiate in an HTTP request."""
+
+    def __init__(
+        self,
+        scene: str,
+        weights: Path,
+        engine: Path | None = None,
+        backend: str = "auto",
+    ) -> None:
+        if scene not in SCENES:
+            raise KeyError(f"未知场景: {scene!r}")
+        self.scene = scene
+        self.model, self.backend = _load_backend(scene, weights, backend, engine)
+
+    def predict(
+        self,
+        image,
+        *,
+        conf: float = 0.35,
+        iou: float = 0.70,
+        imgsz: int | None = None,
+        device: str = "auto",
+    ) -> RuntimePrediction:
+        if not 0.01 <= conf <= 1:
+            raise ValueError("conf must be between 0.01 and 1")
+        if not 0.01 <= iou <= 1:
+            raise ValueError("iou must be between 0.01 and 1")
+        target_size = imgsz or int(SCENES[self.scene]["imgsz"])
+        if not 320 <= target_size <= 1280 or target_size % 32:
+            raise ValueError("imgsz must be a multiple of 32 between 320 and 1280")
+        if isinstance(image, (str, Path)):
+            image = cv2.imread(str(image))
+        if image is None:
+            raise ValueError("image could not be decoded")
+
+        started = perf_counter()
+        if self.backend == "trt":
+            detections = self.model.detect(image, conf=conf)
+        else:
+            kwargs = {
+                "conf": conf,
+                "iou": iou,
+                "imgsz": target_size,
+                "verbose": False,
+            }
+            if device != "auto":
+                kwargs["device"] = device
+            result = self.model(image, **kwargs)[0]
+            detections = [
+                {
+                    "cls": self.model.names[int(box.cls)],
+                    "conf": round(float(box.conf), 3),
+                    "box": [round(float(value), 1) for value in box.xyxy[0].tolist()],
+                }
+                for box in result.boxes
+            ]
+        inference_ms = round((perf_counter() - started) * 1000, 2)
+        return RuntimePrediction(
+            scene=self.scene,
+            detections=detections,
+            annotated_image=annotate_detections(image, detections),
+            inference_ms=inference_ms,
+            backend=self.backend,
+        )
 
 
 class SceneHandler:

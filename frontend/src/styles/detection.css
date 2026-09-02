@@ -1,0 +1,41 @@
+.detection-console,.live-panel,.detail-summary,.media-grid article,.objects-panel,.job-list article { border: 1px solid #263c44; background: #0d1a1f; }
+.detection-console,.live-panel,.objects-panel { padding: clamp(1rem,3vw,2rem); }
+.mode-tabs { display: flex; gap: .35rem; overflow-x: auto; border-bottom: 1px solid #263c44; margin: -1rem -1rem 1.5rem; padding: 1rem 1rem 0; }
+.mode-tabs button { border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); padding: .8rem 1rem; cursor: pointer; white-space: nowrap; }
+.mode-tabs button.active { color: var(--cyan); border-color: var(--cyan); }
+.detection-form { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1rem; }
+select { width: 100%; border: 1px solid #3a5058; background: #0c181d; color: var(--mist); padding: .72rem .8rem; }
+.file-control { grid-column: 1/-1; border: 1px dashed #3a5058; padding: 1rem; }
+.file-control input { border: 0; padding: 0; }
+.console-actions { display: flex; gap: .6rem; margin-top: 1.25rem; }
+.danger-button { border: 1px solid var(--red); color: var(--red); background: transparent; padding: .65rem .85rem; cursor: pointer; }
+.success-note { border-left: 3px solid var(--cyan); background: #102727; color: #c7fbf7; padding: .8rem 1rem; }
+.live-panel { margin-top: 1rem; }
+.preview-frame { aspect-ratio: 16/9; display: grid; place-items: center; margin-top: 1rem; overflow: hidden; background: #050c10; color: var(--muted); }
+.preview-frame img,.media-grid img,.media-grid video { width: 100%; max-height: 65vh; object-fit: contain; display: block; }
+.history-filter { width: min(20rem,100%); margin-bottom: 1rem; }
+.job-list { display: grid; gap: .75rem; }
+.job-list article { padding: 1rem; }
+.job-head { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: .7rem; }
+.job-head time { justify-self: end; color: var(--muted); font-size: .75rem; }
+progress { width: 100%; height: .5rem; margin: 1rem 0; accent-color: var(--cyan); }
+.job-meta { display: flex; flex-wrap: wrap; gap: 1rem; color: var(--muted); font-size: .78rem; }
+.job-list .row-actions { margin-top: 1rem; }
+.detail-summary { display: grid; grid-template-columns: auto minmax(8rem,1fr) auto auto; align-items: center; gap: 1rem; padding: 1rem; margin-bottom: 1rem; }
+.detail-summary progress { margin: 0; }
+.detail-summary code { color: var(--muted); overflow-wrap: anywhere; }
+.media-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; }
+.media-grid article { padding: 1rem; min-width: 0; }
+.media-grid h2,.objects-panel h2 { margin-top: 0; font-size: 1rem; color: var(--cyan); }
+.media-note { color: var(--amber); font-size: .78rem; }
+.objects-panel { margin-top: 1rem; }
+.object-layout { display: grid; grid-template-columns: minmax(16rem,.7fr) 1.3fr; gap: 1rem; }
+.object-list { max-height: 30rem; overflow: auto; display: grid; align-content: start; gap: .35rem; }
+.object-list button { display: grid; grid-template-columns: 1fr auto auto; gap: .7rem; text-align: left; border: 1px solid #2d434b; background: #0a151a; color: var(--mist); padding: .7rem; cursor: pointer; }
+.object-list button.active { border-color: var(--cyan); }
+.object-list span,.object-list time { color: var(--muted); }
+.status-badge.queued,.status-badge.cancelling { border-color: var(--amber); color: var(--amber); }
+.status-badge.running,.status-badge.succeeded { border-color: var(--cyan); color: var(--cyan); }
+.status-badge.cancelled,.status-badge.failed { border-color: var(--red); color: var(--red); }
+@media (max-width:900px) { .detection-form { grid-template-columns: repeat(2,minmax(0,1fr)); }.detail-summary { grid-template-columns: auto 1fr; }.detail-summary code,.detail-summary > span:last-child { grid-column: 1/-1; }.media-grid { grid-template-columns: 1fr; } }
+@media (max-width:600px) { .detection-form { grid-template-columns: 1fr; }.file-control { grid-column: auto; }.console-actions { flex-wrap: wrap; }.job-head { grid-template-columns: auto 1fr; }.job-head time { grid-column: 1/-1; justify-self: start; }.object-layout { grid-template-columns: 1fr; }.detail-summary { grid-template-columns: 1fr; }.detail-summary code,.detail-summary > span:last-child { grid-column: auto; } }
