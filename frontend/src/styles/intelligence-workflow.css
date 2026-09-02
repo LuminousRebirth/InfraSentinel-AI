@@ -1,0 +1,41 @@
+.workflow-panel {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1.4rem;
+  padding: 1.2rem;
+  border: 1px solid #d8dfdd;
+  background: #fff;
+}
+
+.workflow-panel h3 { margin: 0; }
+.workflow-panel label, .personal-key label {
+  display: grid;
+  gap: 0.35rem;
+  color: #64716f;
+  font-size: 0.75rem;
+}
+.workflow-panel textarea {
+  min-height: 6rem;
+  padding: 0.7rem;
+  border: 1px solid #cfd8d5;
+  resize: vertical;
+}
+.attachment-control input {
+  padding: 0.55rem;
+  border: 1px dashed #aab8b4;
+  background: #f7f9f8;
+}
+.timeline { display: grid; border-left: 2px solid #b7c8c4; }
+.timeline div { display: grid; gap: 0.15rem; padding: 0.45rem 0.8rem; }
+.timeline span { color: #70807d; font-size: 0.75rem; }
+.personal-key { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #cddad6; }
+.personal-key summary { cursor: pointer; font-weight: 700; }
+.personal-key select, .personal-key input {
+  min-height: 2.5rem;
+  padding: 0.5rem;
+  border: 1px solid #c2d0cc;
+  background: #fff;
+}
+.personal-key[open] { display: grid; gap: 0.7rem; }
+.alert-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; padding: 0.7rem; border-bottom: 1px solid #d8dfdd; }
+.alert-filters select { min-width: 0; padding: 0.5rem; border: 1px solid #cfd8d5; background: #fff; color: #314644; }

@@ -70,6 +70,13 @@ def _running_worker_count(runtime_root: Path) -> int:
     return running
 
 
+def _pid_file_running(pid_path: Path) -> bool:
+    try:
+        return _pid_is_running(int(pid_path.read_text(encoding="ascii").strip()))
+    except (OSError, ValueError):
+        return False
+
+
 def readiness(settings: Settings | None = None) -> ReadinessResponse:
     settings = settings or get_settings()
 
@@ -100,6 +107,11 @@ def readiness(settings: Settings | None = None) -> ReadinessResponse:
     dependencies["vision_workers"] = DependencyHealth(
         status="ok" if worker_count >= settings.infrasentinel_vision_workers else "warning",
         detail=f"{worker_count}/{settings.infrasentinel_vision_workers} workers running",
+    )
+    intelligence_running = _pid_file_running(runtime_root / "intelligence-worker.pid")
+    dependencies["intelligence_worker"] = DependencyHealth(
+        status="ok" if intelligence_running else "warning",
+        detail="running" if intelligence_running else "not running",
     )
 
     try:

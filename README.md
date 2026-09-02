@@ -2,7 +2,7 @@
 
 Windows 本地部署的企业级管道缺陷与安全帽智能检测、分析和预警平台。
 
-当前开发里程碑为 **v1.2 vision-detection**：在身份、项目权限和审计基础上，增加本地 YOLO 图片、视频与单路 OBS 虚拟摄像头检测、持久任务队列、双 worker、检测记录和中英文 Web 界面。
+当前已完成 **v1.3 alert-intelligence**：在本地 YOLO 图片、视频与单路 OBS 检测基础上，增加确定性事件合并、规则风险分级、告警处置与证据链，以及 Qwen、DeepSeek、GLM 的统一视觉分析接口。云端模型未配置时规则告警仍可完整运行。
 
 ## 初始化
 
@@ -20,7 +20,7 @@ powershell -ExecutionPolicy Bypass -File scripts/start.ps1
 conda run -n infrasentinel infrasentinel init-admin
 ```
 
-普通用户可以在系统界面申请账户，管理员批准并分配项目后即可登录。云端模型 API 尚未接入；相关凭据后续仅通过环境变量配置。
+普通用户可以在系统界面申请账户，管理员批准并分配项目后即可登录。管理员可在“模型设置”中配置系统模型地址和写入式密钥，普通用户可在“告警中心”配置个人密钥；密钥加密保存且不会回显。
 
 ## 本地视觉模型
 
@@ -33,10 +33,12 @@ INFRASENTINEL_PPE_PT=E:/path/to/ppe/best.pt
 INFRASENTINEL_PPE_ENGINE=E:/path/to/ppe/best.engine
 ```
 
-启动脚本会执行迁移、同步模型并启动 API 和两个独立视觉 worker。也可以单独同步：
+启动脚本会执行迁移、同步模型、写入默认告警规则，并启动 API、两个视觉 worker 和一个智能分析 worker。也可以单独执行：
 
 ```powershell
 conda run -n infrasentinel python -m infrasentinel.cli sync-vision-models
+conda run -n infrasentinel python -m infrasentinel.cli seed-alert-rules
+conda run -n infrasentinel python -m infrasentinel.cli backfill-intelligence
 ```
 
 登录后从“智能检测”提交图片或视频，或在 OBS Virtual Camera 已启动时开启实时检测；“检测记录”提供进度、取消、重试、原始/标注媒体和检测对象详情。视频标注输出为 H.264 MP4，当前版本不保留音频。
@@ -58,4 +60,4 @@ docker compose --env-file .env config --quiet
 Push-Location frontend; npm run lint; npm run test -- --run; npm run build; Pop-Location
 ```
 
-详细范围见 [PROJECT_REQUIREMENTS.md](PROJECT_REQUIREMENTS.md)、[CAPABILITY_MAP.md](CAPABILITY_MAP.md)、[SPEC-platform-foundation.md](SPEC-platform-foundation.md)、[SPEC-identity-access.md](SPEC-identity-access.md) 和 [SPEC-vision-detection.md](SPEC-vision-detection.md)。
+详细范围见 [PROJECT_REQUIREMENTS.md](PROJECT_REQUIREMENTS.md)、[CAPABILITY_MAP.md](CAPABILITY_MAP.md)、[SPEC-platform-foundation.md](SPEC-platform-foundation.md)、[SPEC-identity-access.md](SPEC-identity-access.md)、[SPEC-vision-detection.md](SPEC-vision-detection.md) 和 [SPEC-alert-intelligence.md](SPEC-alert-intelligence.md)。

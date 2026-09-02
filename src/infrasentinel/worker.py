@@ -40,6 +40,7 @@ from .detection_service import (
     heartbeat_job,
     input_media_for_job,
 )
+from .intelligence_service import refresh_job_intelligence
 from .vision_models import sha256_file
 
 
@@ -225,6 +226,7 @@ class VisionWorker:
                 "backend": prediction.backend,
             },
         )
+        refresh_job_intelligence(db, job)
 
     def process_video(self, db: Session, job: DetectionJob, runtime) -> None:
         source = input_media_for_job(db, job)
@@ -375,6 +377,7 @@ class VisionWorker:
                 "audio_retained": False,
             },
         )
+        refresh_job_intelligence(db, job)
 
     def process_obs(
         self, db: Session, job: DetectionJob, runtime, *, capture=None, redis=None
@@ -399,6 +402,7 @@ class VisionWorker:
                     raise RuntimeError("OBS frame capture failed")
                 db.expire(job, ["status", "parameters_json"])
                 if cancellation_requested(db, job.id):
+                    refresh_job_intelligence(db, job)
                     cancel_running_job(db, job)
                     return
                 resolution = str(job.parameters_json.get("resolution") or "720p")
@@ -442,7 +446,7 @@ class VisionWorker:
                 ok, encoded = cv2.imencode(".jpg", prediction.annotated_image)
                 if ok:
                     redis.setex(f"infrasentinel:obs:{job.id}:preview", 3, encoded.tobytes())
-                if processed % 15 == 0:
+                if processed % 300 == 0:
                     elapsed = max(time.perf_counter() - started, 0.001)
                     db.add(
                         DetectionMetric(
@@ -461,6 +465,7 @@ class VisionWorker:
                         progress=0,
                         detail="live",
                     )
+                    refresh_job_intelligence(db, job)
                 frame_index += 1
         finally:
             capture.release()

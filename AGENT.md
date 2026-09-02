@@ -10,8 +10,8 @@
 - 旧 Demo（只读迁移来源）：`E:\python_code\yolo`
 - 目标：基于现有 YOLO26 Demo 构建 Windows 本地部署的企业级管道缺陷与安全帽智能检测分析预警系统。
 - 详细需求：[PROJECT_REQUIREMENTS.md](PROJECT_REQUIREMENTS.md)
-- 当前阶段：v1.2 `vision-detection` 已于 2026-09-02 通过用户审阅，后续开发继续留在独立分支。
-- 当前版本：v1.2 位于 `codex/v1.2-vision-detection`；按用户要求，后续提交仅推送此开发分支，整个系统完成前不合并 `main`、不推送新标签。v1.1 为提交 `4509f8b`、标签 `v1.1`。
+- 当前阶段：v1.3 `alert-intelligence` 已完成实现与质量门禁，后续进入 v1.4，开发继续留在独立分支。
+- 当前版本：v1.3 位于 `codex/v1.2-vision-detection`；按用户要求，后续提交仅推送此开发分支，整个系统完成前不合并 `main`、不推送新标签。v1.2 基线提交为 `f201e50`。
 
 ## 2. 已确认决策
 
@@ -38,16 +38,16 @@
 | v1.0 | 工程基线、Conda、Docker、数据服务、安全配置 | 完成 | 提交 `b77d245`；标签 `v1.0` 已推送；23 tests passed；健康检查 overall ready、存储容量 warning。 |
 | v1.1 | 认证、审批、权限、国际化、审计基础 | 完成，用户审查通过 | 38 个 Python 测试、7 个前端测试通过；界面、深链接、API 文档和全部依赖实时健康。 |
 | v1.2 | YOLO26 图片/视频/OBS 检测与记录 | 完成，用户审阅通过 | 53 个 Python 测试、9 个前端测试及实机图片/视频检测通过；真实 OBS 摄像头未启用。 |
-| v1.3 | LLM、多点分析、规则与预警闭环 | 未开始 | 依赖 v1.1、v1.2。 |
+| v1.3 | LLM、多点分析、规则与预警闭环 | 完成，待最终系统审阅 | 63 个 Python 测试、11 个前端测试通过；真实云端凭据待用户提供，不阻塞规则预警。 |
 | v1.4 | 数据集、标注、训练、评估、模型治理 | 未开始 | 依赖 v1.0、v1.2。 |
 | v1.5 | 工作台、报告、点位、健康、成本与设置 | 未开始 | 依赖 v1.3、v1.4。 |
 | v1.6 | Electron 离线与同步、回归、部署验收 | 未开始 | 依赖 v1.1-v1.5。 |
 
 ## 4. 下一次工作应执行
 
-1. 后续模块继续在 `codex/v1.2-vision-detection` 开发并只推送该分支；整个系统完成后再由用户决定何时合并 `main` 和建立标签。
-2. 启动 OBS Virtual Camera 后补做真实单路一小时验收；仿真 OBS 流程已通过。
-3. 继续保护 `E:\python_code\yolo\datasets`、权重和训练产物；不得复制或提交到新仓库。
+1. 规格化并连续实施 v1.4 `dataset-model-lifecycle`；保护现有外部模型与历史检测数据。
+2. 后续提交仅推送 `codex/v1.2-vision-detection`；整个系统完成后再决定合并 `main` 和标签。
+3. 启动 OBS Virtual Camera 后补真实一小时验收；继续保护旧模型、数据集和训练产物。
 
 ## 5. 当前风险与未决项
 
@@ -121,3 +121,12 @@
 - 风险或偏差：OBS Virtual Camera 在索引 0 未开启，仿真捕获/Redis/取消/设备失败已通过但真实一小时验收待补；视频元数据使用 OpenCV 而非独立 FFprobe；模型同步不单独跑 TensorRT smoke，而由 worker 加载时验证并回退；详情暂取前 200 条观测且未提供游标分页；GPU 利用率/显存字段预留但未采样。E 盘约 11.9 GB 可用，仍处于容量告警。
 - 运维：`scripts/start.ps1` 自动迁移、同步模型、构建前端并启动 API + 2 worker；`scripts/health.ps1` 检查依赖；`scripts/stop.ps1` 仅停止校验过命令行的项目进程并保留 Docker 卷和媒体。Docker Desktop 4.50 再次生成不可访问的 AI/secrets socket 时，已备份设置到 `settings-store.pre-recovery-20260902-145004.json`，并将故障目录移动为 `run-stale-20260902-145004`、`docker-secrets-engine-stale-20260902-145334`、`run-stale-20260902-145649`；均可恢复，未删除容器、镜像或卷。
 - 下一步：在 `codex/v1.2-vision-detection` 提交并推送，保留独立回退点；后续模块继续只推送此分支，整个系统完成前不合并主分支、不推送新标签。
+
+### 2026-09-02 — v1.3 alert-intelligence implementation
+- 状态：实现、五轴审查与本地集成验收完成；按用户要求留在开发分支，整个系统完成前不合并 `main`、不创建标签。
+- 变更：增加可逆告警智能 schema；七条确定性默认规则；图片独立事件与视频/OBS 时间+IoU 合并；规则分级、告警状态机、指派/处置/误报/结案、版本冲突、审计轨迹和安全证据附件；Qwen/DeepSeek/GLM OpenAI 兼容视觉适配器；Fernet 系统/个人写入式密钥；租约分析 worker 与无密钥等待配置；中英文告警中心、筛选、详情、处置、附件、个人密钥和管理员规则/供应商设置。
+- 验证：PostgreSQL 迁移到 `20260902_0004 (head)`；默认规则重复写入为 7 条，7 个历史任务回填得到 72 个事件、3 条规则告警、72 个等待配置分析且 0 个凭据；Python `63 passed`、前端 `11 passed`；Ruff、ESLint、TypeScript/Vite、`pip check`、Compose、PowerShell 解析、OpenAPI 和脚本重启通过；API + 2 个视觉 worker + 1 个智能 worker 启动，依赖 readiness 为 ready。
+- 审查：修复项目成员撤销后列表越权、附件只信扩展名、配置与密钥审计缺失、个人密钥无删除入口、OBS 聚合关键帧 N+1 与高频全量扫描、普通用户错误显示管理员指派动作。无未解决的关键/必改项。
+- 风险或偏差：真实云端模型调用等待用户提供 endpoint/model/API key；当前以 fake transport 和 fake worker 完成结构化成功/失败验收。真实 OBS Virtual Camera 一小时运行仍待设备开启。存储约 11.86 GB 可用，继续处于容量告警。
+- 下一步：规格化并实施 v1.4 `dataset-model-lifecycle`。
+- GitHub：仅推送 `codex/v1.2-vision-detection`；不合并 `main`，不创建 v1.3 标签。

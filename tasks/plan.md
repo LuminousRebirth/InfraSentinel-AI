@@ -1,110 +1,65 @@
-# v1.2 Implementation Plan: vision-detection
+# v1.3 Implementation Plan: alert-intelligence
 
-## Scope and authorization
+Implement `SPEC-alert-intelligence.md` on `codex/v1.2-vision-detection`. Existing defaults and uninterrupted-build authorization cover all phases. No main merge or new tag occurs.
 
-This plan implements the user-approved `SPEC-vision-detection.md`. On 2026-09-02 the user explicitly authorized uninterrupted implementation through final review, so the plan and task phases do not pause for separate approval. LLM, rule grading, alerts, event merging, reports, deletion, model training/lifecycle, and Electron remain out of scope.
+## Slice 1 — Durable foundation
 
-## Dependency graph
+1. Add rules/events/alerts/actions/attachments/providers/credentials/analyses/call tables.
+2. Add one reversible migration with workflow, uniqueness, bounds and ownership indexes.
+3. Seed global default rules idempotently.
 
-```text
-approved specification
-  └─ configuration + model deployment registry + migration
-      ├─ shared inference runtime and annotation
-      └─ durable job/media/observation services
-          ├─ streamed image/video upload API
-          ├─ PostgreSQL worker claim/lease/retry lifecycle
-          │   ├─ image execution
-          │   ├─ video execution
-          │   └─ single OBS execution + Redis preview
-          └─ authorized list/detail/media/OBS API
-              └─ bilingual create/history/detail/live Web UI
-                  └─ full regression + hardware/browser acceptance + review
-```
+Checkpoint: metadata/migration/seed tests and round trip pass; plaintext credentials cannot appear in API models.
 
-## Build sequence
+## Slice 2 — Events, rules and workflow
 
-### Slice 1 — Persistence and configured model assets
+1. Implement pure IoU/time grouping and deterministic fingerprints.
+2. Upsert events/one alert per event and backfill successful jobs.
+3. Implement access, assignment, legal transitions, deadlines, notes, level override and append-only actions.
+4. Hook completed vision jobs and periodic OBS commits into idempotent refresh.
 
-1. Pin only `python-multipart` and add bounded vision settings.
-2. Add v1.2 enums/tables and one reversible Alembic migration.
-3. Add an idempotent CLI that registers the two configured legacy model deployments by path and checksum without copying bytes.
+Checkpoint: grouping boundaries, project precedence, uniqueness, workflow and audit pass; live backfill creates alerts without LLM.
 
-Checkpoint: schema round-trip passes and both local scenes can be represented as available/unavailable without preventing startup.
+## Slice 3 — Provider configuration and analysis worker
 
-### Slice 2 — Shared runtime, storage, and lifecycle
+1. Derive Fernet encryption from application secret and add write-only system/personal credential services.
+2. Implement one bounded OpenAI-compatible multimodal request with strict response validation.
+3. Add analysis claim/lease/wait/retry/finalization and one intelligence worker.
+4. Add provider, credential and manual analysis APIs with fake transport tests.
 
-1. Preserve the public `vision_inspection.infer` contract while exposing reusable typed detections and deterministic annotation.
-2. Implement server-generated storage keys, chunked hashing, decoder validation, atomic finalization, and media metadata.
-3. Implement legal job transitions, project/owner authorization, atomic PostgreSQL claim, heartbeat lease, cancellation, retry, and audit writes.
+Checkpoint: encryption/redaction, endpoint/response bounds, worker recovery and rule independence pass.
 
-Checkpoint: pure tests prove transition, storage, authorization, fallback, and legacy compatibility behavior without GPU or real weights.
+## Slice 4 — APIs and evidence
 
-### Slice 3 — Image and video vertical flows
+1. Add authorized bounded alert list/detail.
+2. Add workflow/assignment/override and safe attachment upload/download.
+3. Add admin rule/provider and personal credential routes.
 
-1. Add streamed image batch/video upload and durable job creation.
-2. Execute image inference and persist annotated images/observations/metrics.
-3. Execute sampled video inference, write browser-playable annotated video/keyframes, report progress, and cooperate with cancellation.
-4. Expose authorized list/detail/media/cancel/retry routes.
+Checkpoint: role matrix, illegal transitions, horizontal access, audit and safe-media tests pass.
 
-Checkpoint: synthetic adapters and media prove complete, failed, cancelled, recovered, and retried flows; Web requests never execute inference.
+## Slice 5 — Bilingual Web workflow
 
-### Slice 4 — Single OBS flow
+1. Add typed alert client, routes/navigation/status resources.
+2. Build alert center and evidence detail/timeline with workflow controls.
+3. Build minimal admin rules/provider and personal credential controls.
 
-1. Enforce one queued/running OBS job transactionally.
-2. Add camera capture, dynamic parameters, bounded durable observations/keyframes, Redis latest-frame TTL, and clean stop/device-loss behavior.
-3. Add authorized live status/preview delivery with explicit stale/reconnect state.
+Checkpoint: component tests/lint/build and 360px/1280px review pass; missing API is clearly non-blocking.
 
-Checkpoint: fake camera tests cover concurrency, dynamic updates, disconnect, cancellation, and preview expiry; real OBS acceptance follows when the local device is available.
+## Slice 6 — Acceptance and branch archive
 
-### Slice 5 — Bilingual Web experience
+1. Run migration round trip, seed/backfill twice, full regressions, scripts and live workflow.
+2. Run fake-provider end-to-end; real provider remains pending credentials.
+3. Perform five-axis review and fix all critical/required findings.
+4. Update docs/scans and push only the development branch.
 
-1. Add typed API contracts and detection navigation.
-2. Build image/video/OBS create controls and upload/queue feedback.
-3. Build history/detail media, object, timeline, progress, cancellation, and retry views.
-4. Extend the industrial dark system for 360px/1280px, keyboard, focus, and non-color status cues.
+## Risks and Controls
 
-Checkpoint: focused component tests, locale parity, lint, and production build pass.
+- Cloud API absent: waiting state + fake transport; rules never depend on cloud.
+- Alert storms: deterministic fingerprint, unique event alert, merge window/cooldown.
+- Secrets: Fernet, write-only schemas, redacted audit/logs, secret scan.
+- SSRF/oversize: HTTPS/loopback checks, redirects off, time/body bounds.
+- Workflow races: row locking/version checks and database constraints.
+- Scope creep: no DSL, SDK, external notification, dashboard, report, RAG or deletion.
 
-### Slice 6 — Integrated acceptance and final review
+## Completion Rule
 
-1. Run full Python/frontend tests, Ruff, build, migration cycle, dependency/config/PowerShell checks, and secret/large-file scan.
-2. Restart the live system, register real model assets, run image/video detections, verify two workers, and exercise one OBS session when a camera is available.
-3. Perform multi-axis correctness/security/performance/maintainability/accessibility review and fix all required findings.
-4. Update README, specification checkboxes, task evidence, and `AGENT.md`; leave the milestone uncommitted/unpushed for the user's final review.
-
-## Key decisions
-
-- PostgreSQL is the queue and source of truth; Redis is only short-lived OBS transport.
-- Two independent Windows worker processes avoid CUDA fork inheritance and satisfy the approved two-job ceiling.
-- One concrete adapter, worker, and storage layout are used; no generic broker/provider/repository abstractions.
-- Model binaries remain read-only external assets selected by environment variables.
-- Every API access applies both project access and ownership, with administrator global visibility.
-- Outputs publish only after atomic filesystem finalization and a successful database transaction.
-
-## Risks and mitigations
-
-- **Low E-drive capacity:** reject unsafe uploads at a critical free-space floor; use tiny generated acceptance media; preserve the existing warning.
-- **GPU/TensorRT mismatch:** smoke-test availability and expose `.pt` fallback; never fail application startup because a model is absent.
-- **Worker crash or duplicate output:** claim with row locks, heartbeat leases, attempt-scoped temporary files, and conditional final transition.
-- **Large/untrusted media:** chunked byte limits, decoder/FFprobe validation, UUID storage keys, bounded subprocess arguments, and authorized media ids.
-- **OBS unavailable in automation:** cover the complete flow with a fake capture adapter and record real-device acceptance separately without weakening required code.
-- **Long video result volume:** store only detected observations and sampled metrics; paginate observation API.
-- **Scope creep:** retain raw observations for v1.3 but do not implement event grouping, risk, LLM, or alert concepts now.
-
-## Verification matrix
-
-| Area | Automated evidence | Live/manual evidence |
-|---|---|---|
-| Schema/models | metadata tests; Alembic up/down/up | tables/indexes inspected |
-| Model registry/runtime | checksum/fallback/CLI tests | real pipeline and PPE assets synchronized |
-| Storage/uploads | size/decoder/path/hash tests | invalid and valid generated media uploads |
-| Queue/workers | claim/lease/cancel/retry tests | two worker processes and restart recovery |
-| Image/video | synthetic inference integration | real YOLO image and short video outputs |
-| OBS | fake capture/Redis/reconnect tests | one OBS virtual camera when available |
-| Authorization | owner/project/admin matrix | two-account media isolation |
-| Frontend | Vitest, locale parity, ESLint, build | zh-CN/en, keyboard, 360px/1280px |
-| Release | full regression, diff/secret/large-file checks | user final review before Git/tag/push |
-
-## Completion rule
-
-v1.2 reaches final review only when the durable lifecycle, authorization, media safety, image/video/OBS paths, bilingual UI, regression suite, live stack, and review findings are documented together. Hardware unavailable at runtime is recorded honestly and may not be replaced by a false success claim.
+All ledger checks pass, exceptions are honest, no-key operation is usable, and only `codex/v1.2-vision-detection` is pushed.

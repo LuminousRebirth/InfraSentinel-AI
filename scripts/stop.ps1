@@ -21,6 +21,11 @@ foreach ($workerPidPath in Get-ChildItem -LiteralPath (Join-Path $projectRoot "r
     Stop-InfraProcess $workerPidPath.FullName "infrasentinel\.worker"
 }
 
+$intelligencePidPath = Join-Path $projectRoot "runtime/intelligence-worker.pid"
+if (Test-Path -LiteralPath $intelligencePidPath) {
+    Stop-InfraProcess $intelligencePidPath "infrasentinel\.intelligence_worker"
+}
+
 if (Test-Path -LiteralPath $pidPath) {
     Stop-InfraProcess $pidPath "uvicorn.*infrasentinel\.main:app"
 }

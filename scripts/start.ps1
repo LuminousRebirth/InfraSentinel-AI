@@ -43,6 +43,7 @@ try {
     }
     & $pythonPath -m alembic upgrade head
     & $pythonPath -m infrasentinel.cli sync-vision-models
+    & $pythonPath -m infrasentinel.cli seed-alert-rules
 
     $apiRunning = $false
     if (Test-Path -LiteralPath $pidPath) {
@@ -87,6 +88,27 @@ try {
             Set-Content -LiteralPath $workerPidPath -Value $worker.Id -Encoding ascii
             Write-Host "Vision worker $index started (PID $($worker.Id))."
         }
+    }
+
+    $intelligencePidPath = Join-Path $runtimeRoot "intelligence-worker.pid"
+    $intelligenceRunning = $false
+    if (Test-Path -LiteralPath $intelligencePidPath) {
+        $oldIntelligencePid = [int](Get-Content -Raw -LiteralPath $intelligencePidPath)
+        if (Test-InfraProcess $oldIntelligencePid $pythonPath "infrasentinel\.intelligence_worker") {
+            Write-Host "Intelligence worker is already running (PID $oldIntelligencePid)."
+            $intelligenceRunning = $true
+        } else {
+            Remove-Item -LiteralPath $intelligencePidPath -Force
+        }
+    }
+    if (-not $intelligenceRunning) {
+        $intelligenceWorker = Start-Process -FilePath $pythonPath -ArgumentList @(
+            "-m", "infrasentinel.intelligence_worker"
+        ) -RedirectStandardOutput (Join-Path $logRoot "intelligence-worker.out.log") `
+          -RedirectStandardError (Join-Path $logRoot "intelligence-worker.err.log") `
+          -WindowStyle Hidden -PassThru
+        Set-Content -LiteralPath $intelligencePidPath -Value $intelligenceWorker.Id -Encoding ascii
+        Write-Host "Intelligence worker started (PID $($intelligenceWorker.Id))."
     }
 } finally {
     Pop-Location

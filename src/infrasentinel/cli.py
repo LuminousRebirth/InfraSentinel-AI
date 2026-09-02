@@ -7,13 +7,23 @@ from .config import get_settings
 from .database import SessionLocal, get_engine
 from .errors import InfraError
 from .health import readiness
+from .intelligence_service import backfill_intelligence, seed_default_rules
 from .services import bootstrap_admin
 from .vision_models import sync_vision_models
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(prog="infrasentinel")
-    parser.add_argument("command", choices=["health", "init-admin", "sync-vision-models"])
+    parser.add_argument(
+        "command",
+        choices=[
+            "health",
+            "init-admin",
+            "sync-vision-models",
+            "seed-alert-rules",
+            "backfill-intelligence",
+        ],
+    )
     args = parser.parse_args()
 
     if args.command == "health":
@@ -56,6 +66,16 @@ def main() -> int:
             for model in models
         ]
         print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return 0
+    if args.command == "seed-alert-rules":
+        with SessionLocal(bind=get_engine()) as db:
+            rules = seed_default_rules(db)
+        print(json.dumps({"rules": len(rules)}, ensure_ascii=False))
+        return 0
+    if args.command == "backfill-intelligence":
+        with SessionLocal(bind=get_engine()) as db:
+            jobs = backfill_intelligence(db)
+        print(json.dumps({"jobs": jobs}, ensure_ascii=False))
         return 0
     return 2
 

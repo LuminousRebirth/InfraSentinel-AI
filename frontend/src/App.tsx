@@ -3,7 +3,9 @@ import { Navigate, NavLink, Outlet, Route, Routes } from "react-router";
 import { useSession } from "./auth/session";
 import { useI18n } from "./i18n";
 import { AdminAuditPage } from "./pages/AdminAuditPage";
+import { AdminIntelligencePage } from "./pages/AdminIntelligencePage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
+import { AlertsPage } from "./pages/AlertsPage";
 import { AppHomePage } from "./pages/AppHomePage";
 import { DetectionDetailPage } from "./pages/DetectionDetailPage";
 import { DetectionHistoryPage } from "./pages/DetectionHistoryPage";
@@ -14,6 +16,9 @@ import { RegisterPage } from "./pages/RegisterPage";
 import "./styles/app.css";
 import "./styles/auth.css";
 import "./styles/detection.css";
+import "./styles/intelligence.css";
+import "./styles/intelligence-workflow.css";
+import "./styles/intelligence-rules.css";
 
 function LanguageSwitch() {
   const { locale, setLocale, t } = useI18n();
@@ -53,8 +58,10 @@ function AppShell() {
           <NavLink to="/app">{t("home")}</NavLink>
           <NavLink to="/detections">{t("detection")}</NavLink>
           <NavLink to="/detections/history">{t("history")}</NavLink>
+          <NavLink to="/alerts">{t("alerts")}</NavLink>
           {user?.role === "admin" && <NavLink to="/admin/users">{t("users")}</NavLink>}
           {user?.role === "admin" && <NavLink to="/admin/audit">{t("audit")}</NavLink>}
+          {user?.role === "admin" && <NavLink to="/admin/intelligence">{t("modelSettings")}</NavLink>}
         </nav>
         <div className="topbar-actions">
           <LanguageSwitch />
@@ -87,9 +94,11 @@ export function App() {
           <Route path="/detections" element={<DetectionPage />} />
           <Route path="/detections/history" element={<DetectionHistoryPage />} />
           <Route path="/detections/:id" element={<DetectionDetailPage />} />
+          <Route path="/alerts" element={<AlertsPage />} />
           <Route element={<RequireEnabled admin />}>
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/admin/audit" element={<AdminAuditPage />} />
+            <Route path="/admin/intelligence" element={<AdminIntelligencePage />} />
           </Route>
         </Route>
       </Route>
