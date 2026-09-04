@@ -13,3 +13,59 @@
 }
 .text-button { padding: 0.35rem 0.55rem; font-size: 0.75rem; }
 @media (max-width: 950px) { .rule-form { grid-template-columns: repeat(2, 1fr); } }
+
+/* Keep the intelligence workspace on the application's dark control-plane palette. */
+.alert-console,
+.settings-card,
+.rule-matrix,
+.workflow-panel {
+  border-color: #2a4149;
+  background: #0d1a1f;
+}
+.alert-rail { border-color: #2a4149; }
+.alert-row { border-color: #20343b; }
+.alert-row:hover,
+.alert-row.active { background: #10262a; }
+.alert-row.active { box-shadow: inset 3px 0 var(--cyan); }
+.alert-sheet { background: linear-gradient(120deg, #0d1a1f 0 72%, #102228 72%); }
+.alert-facts { background: #2a4149; }
+.alert-facts div { background: #091419; }
+.analysis-panel { border-color: var(--cyan); background: #10272a; }
+.status-tag,
+.notice-strip { color: #cdeeed; background: #173337; }
+.settings-card label,
+.provider-form label,
+.workflow-panel label,
+.personal-key label { color: #c8d6d8; }
+.provider-form input,
+.provider-form select,
+.settings-card input,
+.settings-card select,
+.rule-form input,
+.rule-form select,
+.workflow-panel textarea,
+.personal-key input,
+.personal-key select,
+.alert-filters select,
+.attachment-control input {
+  border-color: #3a5058;
+  background: #0c181d;
+  color: var(--mist);
+}
+.provider-list div,
+.rule-matrix th,
+.rule-matrix td,
+.personal-key,
+.alert-filters { border-color: #20343b; }
+.section-kicker,
+.alert-row small,
+.alert-row time,
+.alert-facts dt,
+.provider-list span,
+.rule-matrix small,
+.timeline span,
+.empty-state { color: var(--muted); }
+
+@media (max-width: 800px) {
+  .alert-sheet { background: #0d1a1f; }
+}
