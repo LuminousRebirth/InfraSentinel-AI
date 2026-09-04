@@ -9,6 +9,7 @@ from .detection_api import router as detection_router
 from .errors import install_error_handlers
 from .identity_api import router as identity_router
 from .intelligence_api import router as intelligence_router
+from .lifecycle_api import router as lifecycle_router
 
 
 def create_app() -> FastAPI:
@@ -25,6 +26,7 @@ def create_app() -> FastAPI:
     app.include_router(identity_router, prefix=settings.api_prefix)
     app.include_router(detection_router, prefix=settings.api_prefix)
     app.include_router(intelligence_router, prefix=settings.api_prefix)
+    app.include_router(lifecycle_router, prefix=settings.api_prefix)
 
     frontend_dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 

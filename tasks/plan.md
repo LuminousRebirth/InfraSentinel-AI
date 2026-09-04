@@ -1,65 +1,52 @@
-# v1.3 Implementation Plan: alert-intelligence
+# v1.4 Implementation Plan: dataset-model-lifecycle
 
-Implement `SPEC-alert-intelligence.md` on `codex/v1.2-vision-detection`. Existing defaults and uninterrupted-build authorization cover all phases. No main merge or new tag occurs.
+Implement `SPEC-dataset-model-lifecycle.md` on `codex/v1.2-vision-detection`. No main merge or tag occurs.
 
-## Slice 1 — Durable foundation
+## Slice 1 — Schema and safe imports
 
-1. Add rules/events/alerts/actions/attachments/providers/credentials/analyses/call tables.
-2. Add one reversible migration with workflow, uniqueness, bounds and ownership indexes.
-3. Seed global default rules idempotently.
+1. Add categories, datasets, versions, samples, annotations, changes, findings, jobs, metrics, model versions and deployments.
+2. Add one reversible constrained migration and seed eight categories.
+3. Implement streaming image/video/ZIP import with archive and YOLO-label validation.
 
-Checkpoint: metadata/migration/seed tests and round trip pass; plaintext credentials cannot appear in API models.
+Checkpoint: migration/model/seed tests and malicious archive fixtures pass; staged failures leave no files or rows.
 
-## Slice 2 — Events, rules and workflow
+## Slice 2 — Versioning, annotation and quality
 
-1. Implement pure IoU/time grouping and deterministic fingerprints.
-2. Upsert events/one alert per event and backfill successful jobs.
-3. Implement access, assignment, legal transitions, deadlines, notes, level override and append-only actions.
-4. Hook completed vision jobs and periodic OBS commits into idempotent refresh.
+1. Add project/version authorization and immutable-state rules.
+2. Add annotation revision, review and reversible change services.
+3. Add deterministic split, duplicate/leakage and quality validation.
+4. Add contained YOLO export.
 
-Checkpoint: grouping boundaries, project precedence, uniqueness, workflow and audit pass; live backfill creates alerts without LLM.
+Checkpoint: concurrency, undo, split stability, quality codes and repeat export tests pass.
 
-## Slice 3 — Provider configuration and analysis worker
+## Slice 3 — Lifecycle jobs and governed models
 
-1. Derive Fernet encryption from application secret and add write-only system/personal credential services.
-2. Implement one bounded OpenAI-compatible multimodal request with strict response validation.
-3. Add analysis claim/lease/wait/retry/finalization and one intelligence worker.
-4. Add provider, credential and manual analysis APIs with fake transport tests.
+1. Add leased extract/train/evaluate/export job orchestration and a single worker.
+2. Add fake runner plus bounded local Ultralytics runner boundary.
+3. Record metrics/artifacts/model cards; implement publish/archive/deploy/rollback.
+4. Synchronize only approved trusted weights into the detection registry.
 
-Checkpoint: encryption/redaction, endpoint/response bounds, worker recovery and rule independence pass.
+Checkpoint: fake lifecycle, cancellation/retry, artifact containment, authorization and audit pass.
 
-## Slice 4 — APIs and evidence
+## Slice 4 — APIs and Web workflows
 
-1. Add authorized bounded alert list/detail.
-2. Add workflow/assignment/override and safe attachment upload/download.
-3. Add admin rule/provider and personal credential routes.
+1. Add bounded category/dataset/version/sample/annotation/quality/job/model APIs.
+2. Build bilingual dataset list/detail/import/version/quality views.
+3. Build native annotation workspace with keyboard and revision feedback.
+4. Build training/evaluation/model publication/deployment views.
 
-Checkpoint: role matrix, illegal transitions, horizontal access, audit and safe-media tests pass.
+Checkpoint: API role matrix, components, i18n, lint/build and responsive browser review pass.
 
-## Slice 5 — Bilingual Web workflow
+## Slice 5 — Acceptance and branch archive
 
-1. Add typed alert client, routes/navigation/status resources.
-2. Build alert center and evidence detail/timeline with workflow controls.
-3. Build minimal admin rules/provider and personal credential controls.
+1. Run real PostgreSQL migration/seed plus tiny image/ZIP import/export.
+2. Run fake extraction/train/evaluate/publish/deploy/rollback end to end.
+3. Run full regression, scripts, scans and five-axis review.
+4. Commit and push only `codex/v1.2-vision-detection`.
 
-Checkpoint: component tests/lint/build and 360px/1280px review pass; missing API is clearly non-blocking.
+## Controls
 
-## Slice 6 — Acceptance and branch archive
-
-1. Run migration round trip, seed/backfill twice, full regressions, scripts and live workflow.
-2. Run fake-provider end-to-end; real provider remains pending credentials.
-3. Perform five-axis review and fix all critical/required findings.
-4. Update docs/scans and push only the development branch.
-
-## Risks and Controls
-
-- Cloud API absent: waiting state + fake transport; rules never depend on cloud.
-- Alert storms: deterministic fingerprint, unique event alert, merge window/cooldown.
-- Secrets: Fernet, write-only schemas, redacted audit/logs, secret scan.
-- SSRF/oversize: HTTPS/loopback checks, redirects off, time/body bounds.
-- Workflow races: row locking/version checks and database constraints.
-- Scope creep: no DSL, SDK, external notification, dashboard, report, RAG or deletion.
-
-## Completion Rule
-
-All ledger checks pass, exceptions are honest, no-key operation is usable, and only `codex/v1.2-vision-detection` is pushed.
+- Preserve all existing datasets, weights, media and runs; archive rather than delete.
+- Do not download weights or start long real training automatically.
+- Keep storage limits and current 11.86 GB capacity warning visible.
+- No new dependency without a blocking need and explicit approval.

@@ -4,6 +4,7 @@ import { useSession } from "./auth/session";
 import { useI18n } from "./i18n";
 import { AdminAuditPage } from "./pages/AdminAuditPage";
 import { AdminIntelligencePage } from "./pages/AdminIntelligencePage";
+import { AdminLifecyclePage } from "./pages/AdminLifecyclePage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { AlertsPage } from "./pages/AlertsPage";
 import { AppHomePage } from "./pages/AppHomePage";
@@ -19,6 +20,7 @@ import "./styles/detection.css";
 import "./styles/intelligence.css";
 import "./styles/intelligence-workflow.css";
 import "./styles/intelligence-rules.css";
+import "./styles/lifecycle.css";
 
 function LanguageSwitch() {
   const { locale, setLocale, t } = useI18n();
@@ -62,6 +64,7 @@ function AppShell() {
           {user?.role === "admin" && <NavLink to="/admin/users">{t("users")}</NavLink>}
           {user?.role === "admin" && <NavLink to="/admin/audit">{t("audit")}</NavLink>}
           {user?.role === "admin" && <NavLink to="/admin/intelligence">{t("modelSettings")}</NavLink>}
+          {user?.role === "admin" && <NavLink to="/admin/lifecycle">{t("dataModels")}</NavLink>}
         </nav>
         <div className="topbar-actions">
           <LanguageSwitch />
@@ -99,6 +102,7 @@ export function App() {
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/admin/audit" element={<AdminAuditPage />} />
             <Route path="/admin/intelligence" element={<AdminIntelligencePage />} />
+            <Route path="/admin/lifecycle" element={<AdminLifecyclePage />} />
           </Route>
         </Route>
       </Route>

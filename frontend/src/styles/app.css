@@ -4,7 +4,7 @@
 .brand-lockup span:last-child { display: grid; }
 .brand-lockup small { color: var(--muted); font-size: .68rem; }
 .topbar nav { display: flex; gap: .25rem; }
-.topbar nav a { padding: .65rem .8rem; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; }
+.topbar nav a { padding: .65rem .8rem; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap; }
 .topbar nav a.active { color: var(--mist); border-color: var(--cyan); }
 .topbar-actions { justify-self: end; display: flex; align-items: center; gap: .6rem; }
 .identity-chip { color: var(--muted); font-size: .82rem; }

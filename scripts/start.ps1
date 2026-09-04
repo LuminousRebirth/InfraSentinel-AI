@@ -44,6 +44,7 @@ try {
     & $pythonPath -m alembic upgrade head
     & $pythonPath -m infrasentinel.cli sync-vision-models
     & $pythonPath -m infrasentinel.cli seed-alert-rules
+    & $pythonPath -m infrasentinel.cli seed-dataset-categories
 
     $apiRunning = $false
     if (Test-Path -LiteralPath $pidPath) {
@@ -109,6 +110,27 @@ try {
           -WindowStyle Hidden -PassThru
         Set-Content -LiteralPath $intelligencePidPath -Value $intelligenceWorker.Id -Encoding ascii
         Write-Host "Intelligence worker started (PID $($intelligenceWorker.Id))."
+    }
+
+    $lifecyclePidPath = Join-Path $runtimeRoot "lifecycle-worker.pid"
+    $lifecycleRunning = $false
+    if (Test-Path -LiteralPath $lifecyclePidPath) {
+        $oldLifecyclePid = [int](Get-Content -Raw -LiteralPath $lifecyclePidPath)
+        if (Test-InfraProcess $oldLifecyclePid $pythonPath "infrasentinel\.lifecycle_worker") {
+            Write-Host "Lifecycle worker is already running (PID $oldLifecyclePid)."
+            $lifecycleRunning = $true
+        } else {
+            Remove-Item -LiteralPath $lifecyclePidPath -Force
+        }
+    }
+    if (-not $lifecycleRunning) {
+        $lifecycleWorker = Start-Process -FilePath $pythonPath -ArgumentList @(
+            "-m", "infrasentinel.lifecycle_worker"
+        ) -RedirectStandardOutput (Join-Path $logRoot "lifecycle-worker.out.log") `
+          -RedirectStandardError (Join-Path $logRoot "lifecycle-worker.err.log") `
+          -WindowStyle Hidden -PassThru
+        Set-Content -LiteralPath $lifecyclePidPath -Value $lifecycleWorker.Id -Encoding ascii
+        Write-Host "Lifecycle worker started (PID $($lifecycleWorker.Id))."
     }
 } finally {
     Pop-Location

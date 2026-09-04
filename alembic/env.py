@@ -5,6 +5,7 @@ from logging.config import fileConfig
 from alembic import context
 from infrasentinel import detection_models as detection_models  # noqa: F401
 from infrasentinel import intelligence_models as intelligence_models  # noqa: F401
+from infrasentinel import lifecycle_models as lifecycle_models  # noqa: F401
 from infrasentinel import models as identity_models  # noqa: F401
 from infrasentinel.config import get_settings
 from infrasentinel.database import Base

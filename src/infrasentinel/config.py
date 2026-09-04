@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     infrasentinel_vision_workers: int = Field(default=2, ge=1, le=8)
     infrasentinel_obs_camera_index: int = Field(default=0, ge=0, le=32)
     infrasentinel_task_lease_seconds: int = Field(default=120, ge=30, le=3600)
+    infrasentinel_lifecycle_fake_runner: bool = False
     infrasentinel_image_max_mb: int = Field(default=50, ge=1, le=50)
     infrasentinel_video_max_gb: int = Field(default=5, ge=1, le=5)
     infrasentinel_video_max_seconds: int = Field(default=7200, ge=1, le=7200)
@@ -65,6 +66,8 @@ class Settings(BaseSettings):
     def reject_unsafe_production_defaults(self) -> Settings:
         secret = self.infrasentinel_secret_key.get_secret_value()
         if self.infrasentinel_env == "production":
+            if self.infrasentinel_lifecycle_fake_runner:
+                raise ValueError("production requires INFRASENTINEL_LIFECYCLE_FAKE_RUNNER=false")
             if secret == "development-only-change-me" or len(secret) < 32:
                 raise ValueError("production requires INFRASENTINEL_SECRET_KEY with 32+ characters")
             database_url = self.database_url.get_secret_value()

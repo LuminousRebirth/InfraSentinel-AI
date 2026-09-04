@@ -8,6 +8,7 @@ from .database import SessionLocal, get_engine
 from .errors import InfraError
 from .health import readiness
 from .intelligence_service import backfill_intelligence, seed_default_rules
+from .lifecycle_service import seed_default_categories
 from .services import bootstrap_admin
 from .vision_models import sync_vision_models
 
@@ -21,6 +22,7 @@ def main() -> int:
             "init-admin",
             "sync-vision-models",
             "seed-alert-rules",
+            "seed-dataset-categories",
             "backfill-intelligence",
         ],
     )
@@ -71,6 +73,11 @@ def main() -> int:
         with SessionLocal(bind=get_engine()) as db:
             rules = seed_default_rules(db)
         print(json.dumps({"rules": len(rules)}, ensure_ascii=False))
+        return 0
+    if args.command == "seed-dataset-categories":
+        with SessionLocal(bind=get_engine()) as db:
+            categories = seed_default_categories(db)
+        print(json.dumps({"categories": len(categories)}, ensure_ascii=False))
         return 0
     if args.command == "backfill-intelligence":
         with SessionLocal(bind=get_engine()) as db:

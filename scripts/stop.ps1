@@ -26,6 +26,11 @@ if (Test-Path -LiteralPath $intelligencePidPath) {
     Stop-InfraProcess $intelligencePidPath "infrasentinel\.intelligence_worker"
 }
 
+$lifecyclePidPath = Join-Path $projectRoot "runtime/lifecycle-worker.pid"
+if (Test-Path -LiteralPath $lifecyclePidPath) {
+    Stop-InfraProcess $lifecyclePidPath "infrasentinel\.lifecycle_worker"
+}
+
 if (Test-Path -LiteralPath $pidPath) {
     Stop-InfraProcess $pidPath "uvicorn.*infrasentinel\.main:app"
 }
